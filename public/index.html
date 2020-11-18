@@ -19,11 +19,89 @@
                 wsavc.playStream();
             }
 
-            wsavc.on('connected', setTimeout(startStream, 500));
+            function startStreamingControls(d) {
+                console.log('WS connected');
+                connected = true;
+                setTimeout(startStream, 500);
+                requestDeviceMotionPermissions();
+            }
+
+            function stopStreamingControls() {
+                console.log('WS disconnected');
+                connected = false;
+            }
+
+            function setStatus(message, error) {
+                if (error) {
+                    console.error(message);
+                } else if (message) {
+                    console.log(message);
+                }
+                $('#status').html(message ? message : '&nbsp;').css('color', error ? '#ffaf00' : '#000');
+            }
+
+            var zerosSent = false, connected = false;
+
+            function deviceMotion(e) {
+                var tilt = e.rotationRate.beta,
+                    pan = e.rotationRate.alpha,
+                    tv = Math.abs(tilt) > 0.01 ? tilt.toFixed(2) : 0.0,
+                    pv = Math.abs(pan) > 0.01 ? pan.toFixed(2) : 0.0
+
+                if (connected) {
+                    $('#tilt').html(tv);
+                    $('#pan').html(pv);
+
+                    if (tv && pv || !zerosSent) {
+                        wsavc.send('{"pan": ' + pv + ', "tilt": ' + tv + '}');
+                        zerosSent = !tv && !pv;
+                    }
+                }
+            }
+
+            function requestDeviceMotionPermissions() {
+                window.DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('devicemotion', deviceMotion, (e) => {
+                                throw e
+                            })
+                        } else {
+                            setStatus('DeviceMotion permissions NOT granted.', true);
+                        }
+                    })
+                    .catch(e => {
+                        console.error(e)
+                    })
+            }
+
+            $('h1').click(startStreamingControls);
+            setTimeout(startStreamingControls, 100);
         });
     </script>
+
+    <style>
+        body {
+            margin: 12px;
+            background: #444;
+            color: #fff;
+            font-family: Arial, Helvetica, Sans-Serif, serif;
+        }
+
+        #controls {
+            float: top;
+        }
+    </style>
+
 </head>
 <body>
-<canvas id="view"/>
+<canvas id="view"></canvas>
+<div id="controls">
+    <h1>Motion Test</h1>
+    <div id="status"></div>
+    <p>
+    <div id="pan">pan</div>
+    <div id="tilt">tilt</div>
+</div>
 </body>
 </html>

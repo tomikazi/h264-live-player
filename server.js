@@ -14,4 +14,5 @@ app.use('/camera', express.static(__dirname + '/vendor/dist'));
 const server = http.createServer(app);
 const silence = new WebStreamerServer(server);
 
+console.log("Starting server...");
 server.listen(5000);
