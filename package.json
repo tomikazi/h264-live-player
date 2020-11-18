@@ -1,8 +1,8 @@
 {
-  "name": "Pan/Tilt camera with h264 live stream - server",
+  "name": "ptcam",
   "private": true,
   "version": "1.0.0",
-  "description": "",
+  "description": "Pan and tilt camera with h264 live stream",
   "main": "server.js",
   "scripts": {
     "install": "cd vendor && npm install",
@@ -12,11 +12,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "a4988": "git+https://github.com/echicken/A4988.git",
     "express": "^3.21.2",
     "mout": "^1.0.0",
     "stream-split": "^1.1.0",
     "stream-throttle": "^0.1.3",
-    "ws": "^7.2.0"
+    "pigpio": "^3.2.4",
+    "ws": "^7.4.0"
   },
   "devDependencies": {}
 }
