@@ -1,5 +1,9 @@
 <html>
 <head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="app.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
     <title>Pan &amp Tilt Camera</title>
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.12.4.min.js"></script>
@@ -51,6 +55,8 @@
                 if (connected) {
                     $('#tilt').html(tv);
                     $('#pan').html(pv);
+                    $('toggle').html('');
+                    setStatus('', false);
 
                     if (tv && pv || !zerosSent) {
                         wsavc.send('{"pan": ' + pv + ', "tilt": ' + tv + '}');
@@ -75,33 +81,65 @@
                     })
             }
 
-            $('h1').click(startStreamingControls);
-            setTimeout(startStreamingControls, 100);
+            $('#toggle').click(startStreamingControls);
+            setTimeout(startStreamingControls, 500);
         });
     </script>
 
     <style>
         body {
-            margin: 12px;
+            margin: 0;
+            padding: 0;
             background: #444;
-            color: #fff;
+            color: #ddd;
             font-family: Arial, Helvetica, Sans-Serif, serif;
         }
 
+        #container {
+            width: 960px;
+            height: 640px;
+            position: relative;
+        }
+
+        #view {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #333;
+            z-index: -1;
+        }
+
+        .control {
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .right {
+            float: right;
+        }
+
         #controls {
-            float: top;
+            padding: 5px 10px 5px 10px;
+        }
+
+        #toggle {
+            margin-right: 60px;
+            font-weight: bold;
         }
     </style>
 
 </head>
 <body>
-<canvas id="view"></canvas>
-<div id="controls">
-    <h1>Motion Test</h1>
-    <div id="status"></div>
-    <p>
-    <div id="pan">pan</div>
-    <div id="tilt">tilt</div>
+<div id="container">
+    <canvas id="view"></canvas>
+    <div id="controls">
+        <div class="control" id="status">Connecting...</div>
+        <div class="control right" id="toggle">Start</div>
+        <div class="control right" id="pan">pan</div>
+        <div class="control right" id="tilt">tilt</div>
+    </div>
 </div>
 </body>
 </html>
