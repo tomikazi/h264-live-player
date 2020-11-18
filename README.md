@@ -1,4 +1,17 @@
+# Overview
+
+This is an adaptation of the original h264 video player to provide a real-time (or at least low-latency) 
+video stream a camera on a pan/tilt mount to a browser-based viewer. The viewer can be a mobile device
+which when physically moved will result in corresponding motions of the pan/tilt mount. Alternatively,
+when viewed from a computer or other devices that do not support `DeviceMotionEvent` Web API the user
+can control pan/tilt by dragging the orientation indicator within the pan/tilt range box.
+
+This adaptation mangles the original by removing the alternate forms of streaming, instead focusing
+directly only on the `raspvid` live stream.  The pen tilt mechanism uses A4988 stepper drivers to mount 
+and move about a Raspberry Pi HQ camera.
+
 # Motivation
+_The following are the original notes._
 
 This is a very simple h264 video player (that can run on live stream) for your browser.
 You might use this with raspicam raw h264 stream.
