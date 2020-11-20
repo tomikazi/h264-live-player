@@ -2,7 +2,7 @@
 <head>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="app.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=1280, initial-scale=0.66, maximum-scale=1, user-scalable=no" />
 
     <title>Pan &amp Tilt Camera</title>
 
@@ -44,7 +44,9 @@
                 $('#status').html(message ? message : '&nbsp;').css('color', error ? '#ffaf00' : '#000');
             }
 
-            var zerosSent = false, connected = false;
+            var zerosSent = false,
+                connected = false,
+                controlling = false;
 
             function deviceMotion(e) {
                 var tilt = e.rotationRate.beta,
@@ -52,10 +54,9 @@
                     tv = Math.abs(tilt) > 0.01 ? tilt.toFixed(2) : 0.0,
                     pv = Math.abs(pan) > 0.01 ? pan.toFixed(2) : 0.0
 
-                if (connected) {
-                    $('#tilt').html(tv);
-                    $('#pan').html(pv);
-                    $('toggle').html('');
+                if (connected && controlling) {
+                    // $('#tilt').html(tv);
+                    // $('#pan').html(pv);
                     setStatus('', false);
 
                     if (tv && pv || !zerosSent) {
@@ -69,6 +70,8 @@
                 window.DeviceMotionEvent.requestPermission()
                     .then(response => {
                         if (response === 'granted') {
+                            controlling = true;
+                            $('#toggle').html("Lock");
                             window.addEventListener('devicemotion', deviceMotion, (e) => {
                                 throw e
                             })
@@ -81,7 +84,25 @@
                     })
             }
 
-            $('#toggle').click(startStreamingControls);
+            function toggleControls() {
+                if (!controlling) {
+                    $('#toggle').html("...");
+                    startStreamingControls();
+                } else {
+                    controlling = false;
+                    $('#toggle').html("Unlock");
+                    // $('#tilt').html("-");
+                    // $('#pan').html("-");
+                    stopStreamingControls();
+                }
+            }
+
+            function forceReload() {
+                window.location = window.location;
+            }
+
+            $('#toggle').click(toggleControls);
+            $('#reload').click(forceReload);
             setTimeout(startStreamingControls, 500);
         });
     </script>
@@ -90,14 +111,15 @@
         body {
             margin: 0;
             padding: 0;
-            background: #444;
+            background: #000;
             color: #ddd;
             font-family: Arial, Helvetica, Sans-Serif, serif;
+            font-size: 24px;
         }
 
         #container {
-            width: 960px;
-            height: 640px;
+            width: 1280px;
+            height: 720px;
             position: relative;
         }
 
@@ -121,13 +143,29 @@
         }
 
         #controls {
+            width: 100%;
             padding: 5px 10px 5px 10px;
+            position: fixed;
+        }
+
+        .overlay {
+            margin: 10px;
+            padding: 8px;
+            font-weight: bold;
+            position: absolute;
+            right: 80px;
+            background: #444;
+            opacity: 0.5;
         }
 
         #toggle {
-            margin-right: 60px;
-            font-weight: bold;
+            top: 500px;
         }
+
+        #reload {
+            top: 300px;
+        }
+
     </style>
 
 </head>
@@ -136,9 +174,10 @@
     <canvas id="view"></canvas>
     <div id="controls">
         <div class="control" id="status">Connecting...</div>
-        <div class="control right" id="toggle">Start</div>
-        <div class="control right" id="pan">pan</div>
-        <div class="control right" id="tilt">tilt</div>
+<!--        <div class="control right" id="tilt">-</div>-->
+<!--        <div class="control right" id="pan">-</div>-->
+        <div class="overlay" id="toggle">Unlock</div>
+        <div class="overlay" id="reload">Reload</div>
     </div>
 </div>
 </body>
