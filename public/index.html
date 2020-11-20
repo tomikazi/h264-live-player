@@ -55,8 +55,6 @@
                     pv = Math.abs(pan) > 0.01 ? pan.toFixed(2) : 0.0
 
                 if (connected && controlling) {
-                    // $('#tilt').html(tv);
-                    // $('#pan').html(pv);
                     setStatus('', false);
 
                     if (tv && pv || !zerosSent) {
@@ -91,8 +89,6 @@
                 } else {
                     controlling = false;
                     $('#toggle').html("Unlock");
-                    // $('#tilt').html("-");
-                    // $('#pan').html("-");
                     stopStreamingControls();
                 }
             }
@@ -138,10 +134,6 @@
             margin: 10px;
         }
 
-        .right {
-            float: right;
-        }
-
         #controls {
             width: 100%;
             padding: 5px 10px 5px 10px;
@@ -174,8 +166,6 @@
     <canvas id="view"></canvas>
     <div id="controls">
         <div class="control" id="status">Connecting...</div>
-<!--        <div class="control right" id="tilt">-</div>-->
-<!--        <div class="control right" id="pan">-</div>-->
         <div class="overlay" id="toggle">Unlock</div>
         <div class="overlay" id="reload">Reload</div>
     </div>
