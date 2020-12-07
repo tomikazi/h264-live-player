@@ -23,12 +23,12 @@ class Motor {
         this.limit = new Gpio(options.limit, {
             mode: Gpio.INPUT,
             pullUpDown: Gpio.PUD_DOWN,
-            edge: Gpio.FALLING_EDGE
+            edge: Gpio.EITHER_EDGE,
         });
 
         this.limit.on('interrupt', (level) => {
-            console.log(`${this.name} limit reached`);
-            if (this.homing) {
+            console.log(`${this.name} limit: ${level}`);
+            if (this.homing && !level) {
                 this.ctl.stop();
             }
         });
@@ -49,6 +49,7 @@ class Motor {
     _finish_home(steps) {
         if (steps < this.home_steps) {
             console.log(`${this.name} homed`);
+            this.delay = 1;
             this.pos = 0;
             this.homing = false;
             this.move(this.min)
@@ -71,6 +72,7 @@ class Motor {
             });
         } else {
             this.homing = true;
+            this.delay = 5;
             console.log(`${this.name} starting to home (-${this.home_steps})`);
             this.move(-this.home_steps)
                 .then(steps => this._finish_home(steps));
@@ -79,17 +81,29 @@ class Motor {
 
 }
 
-var pan = new Motor('Pan', {
+const pan = new Motor('Pan', {
     step: 27, dir: 22, enable: 17, limit: 23,
     min: 4 * 16, max: 122 * 16, home_direction: true, home_steps: 200 * 16,
 });
 
-var tilt = new Motor('Tilt', {
+const tilt = new Motor('Tilt', {
     step: 3, dir: 4, enable: 2, limit: 24,
     min: 16, max: 46 * 16, home_direction: false, home_steps: 60 * 16,
 });
 
 console.log("Starting...");
 
-pan.start_home();
-tilt.start_home();
+pan.ctl.enabled = false;
+tilt.ctl.enabled = false;
+
+// pan.start_home();
+// tilt.start_home();
+
+process.on('SIGINT', function() {
+    console.log("Caught interrupt signal");
+    // pan.ctl.enabled = false;
+    // tilt.ctl.enabled = false;
+    process.exit();
+});
+
+

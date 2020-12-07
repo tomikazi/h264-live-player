@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pan &amp; Tilt Camera</title>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            function goToCameraView() {
+                window.location.pathname = window.location.pathname.replace('\/intro.html', '');
+            }
+            $('#start').click(goToCameraView);
+        });
+    </script>
+    <style>
+        body {
+            padding: 0;
+            background: #444;
+            color: #ddd;
+            font-family: Arial, Helvetica, Sans-Serif, serif;
+            font-size: 18px;
+            text-align: center;
+            margin: 32px;
+        }
+
+        #start {
+            padding: 16px;
+            border: 0;
+            border-radius: 8px;
+            background: dodgerblue;
+            color: #ccc;
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+<p>
+    This application allows users with mobile devices to view a low-latency video stream from a remote camera and to
+    control the camera's pan and tilt motion by moving/rotating the mobile device.
+</p>
+<p>
+    For the controls to work properly, the device must be in landscape position; at the moment, it must be rotated
+    90 degrees clock-wise.
+</p>
+<p>
+    You may use the <em>Lock/Unlock</em> button on the camera view to toggle on/off the motion control of the camera.
+    When you press the <em>Unlock</em> button for the first time, you will be asked to give permission for the page to
+    access the mobile device orientation and motion events.
+</p>
+<p>
+    If the video stream becomes laggy or pixelated, please press the <em>Reload</em> button to reset the video stream.
+</p>
+<p>
+    Rotate the device 90 clock-wise into a landscape orientation and then press the start button below.
+</p>
+<p>
+    <button id="start">Start</button>
+</p>
+</body>
+</html>
