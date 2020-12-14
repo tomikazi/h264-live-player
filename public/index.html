@@ -21,7 +21,22 @@
             wsavc.connect(uri, onstatus);
 
             function onstatus(d) {
-                console.log('Status', d);
+                let topic = d.data.topic;
+                let message = d.data.message;
+
+                if (topic === 'train/status') {
+                    console.log(`Train is ${message}`);
+                } else if (topic === 'train/location') {
+                    console.log(`Train is at ${message}`);
+                } else if (topic === 'train/view') {
+                    console.log(`Camera is looking at ${message}`);
+                } else if (topic === 'train/station/status') {
+                    console.log(`Next stop is ${message}`);
+                } else if (topic === 'train/track/status') {
+                    console.log(`Next track is ${message}`);
+                } else {
+                    console.log('Unknown status', d);
+                }
             }
 
             function startStream() {
