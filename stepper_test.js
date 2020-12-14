@@ -1,6 +1,6 @@
 "use strict";
 
-const Motor = require('./stepper');
+const Motor = require('./lib/stepper');
 
 const pan = new Motor('Pan', {
     step: 27, dir: 22, enable: 17, limit: -23,
