@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pan &amp; Tilt Camera</title>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            function goToCameraView() {
+                window.location.pathname = window.location.pathname.replace('\/train.html', '');
+            }
+            $('#start').click(goToCameraView);
+        });
+    </script>
+    <style>
+        body {
+            padding: 0;
+            background: #444;
+            color: #ddd;
+            font-family: Arial, Helvetica, Sans-Serif, serif;
+            font-size: 16px;
+            text-align: center;
+            margin: 32px;
+        }
+
+        #start {
+            padding: 16px;
+            border: 0;
+            border-radius: 8px;
+            background: dodgerblue;
+            color: #ccc;
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+<p>
+    This app allows view of a low-latency video stream from a remote camera that automatically
+    tracks an old O-gauge train, which has been hacked to allow remote control. It is recommended to view the camera
+    stream in landscape orientation.
+</p>
+<p>
+    If the video stream becomes laggy or pixelated, please press the <em>Reload</em> button to reset the video stream.
+</p>
+<p>
+    Use the <em>Station...</em> and <em>Track...</em> menus to select the next destination station and the next track, respectively.
+    The track will be switched only when it is safe to do so, which is when the train is in the tunnel or in the forest.
+</p>
+<p>
+    When the train is stopped, you may also look at the different points of interest using the <em>View...</em> menu.
+    To dismiss a menu without making a selection, just tap the menu button again.
+</p>
+<p>
+    When ready, press the <em>Start</em> button below. On iOS devices, to view the video in full-screen mode,
+    you can create a home screen shortcut via <em>Share -&gt; Add to Home Screen</em> once on the camera screen. Have fun!
+</p>
+<p>
+    <button id="start">Start</button>
+</p>
+</body>
+</html>
