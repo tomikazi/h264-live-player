@@ -18,7 +18,11 @@
             var uri = protocol + '//' + location.hostname + ':' + port;
 
             var wsavc = new WSAvcPlayer(canvas, "webgl", 1, 35);
-            wsavc.connect(uri);
+            wsavc.connect(uri, onstatus);
+
+            function onstatus(d) {
+                console.log('Status', d);
+            }
 
             function startStream() {
                 wsavc.playStream();
