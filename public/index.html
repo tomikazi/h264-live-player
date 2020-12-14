@@ -10,7 +10,7 @@
     <script type="text/javascript" src="/camera/http-live-player.js">;</script>
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function () {
-            var canvas = $('#view')[0];
+            var canvas = $('#canvas')[0];
             var connected = false;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
@@ -34,12 +34,30 @@
                 window.location = window.location;
             }
 
-            function station(e) {
-                wsavc.send('{"station": "' + e.target.innerText + '"}');
+            function menu(topic) {
+                let container = $('#' + topic + 's');
+                let menus = $('.menu');
+                let collapsed = container.css('display') === 'none'
+                container.css('display', collapsed ? 'block' : 'none');
+                menus.css('display', !collapsed ? 'block' : 'none');
+                $('#' + topic).css('display', 'block');
+            }
+
+            function pick(topic, e) {
+                menu(topic);
+                wsavc.send('{"' + topic + '": "' + e.target.innerText + '"}');
             }
 
             $('#reload').click(forceReload);
-            $('.station').click(station);
+
+            $('.view.item').click(function(e) { pick('view', e)});
+            $('.station.item').click(function(e) { pick('station', e)});
+            $('.track.item').click(function(e) { pick('track', e)});
+
+            $('#view').click(function() { menu('view')});
+            $('#station').click(function() { menu('station')});
+            $('#track').click(function() { menu('track')});
+
             setTimeout(startStreamingControls, 500);
         });
     </script>
@@ -60,7 +78,7 @@
             position: relative;
         }
 
-        #view {
+        #canvas {
             width: 100%;
             height: 100%;
             position: absolute;
@@ -77,6 +95,7 @@
         }
 
         .overlay {
+            cursor: pointer;
             border-radius: 8px;
             margin: 10px;
             padding: 8px;
@@ -87,33 +106,64 @@
             opacity: 0.5;
         }
 
+        .item {
+            padding: 8px 24px;
+            cursor: pointer;
+        }
+
         #reload { top: 50px; }
 
-        #tree { top: 150px; }
-        #home { top: 200px; }
+        #view { top: 150px; }
+        #views {
+            display: none;
+            top: 195px;
+        }
 
-        #track1 { top: 300px; }
-        #track2 { top: 350px; }
-        #meadow { top: 400px; }
-        #forest { top: 450px; }
+        #station { top: 220px; }
+        #stations {
+            display: none;
+            top: 265px;
+        }
 
-
+        #track { top: 290px; }
+        #tracks {
+            display: none;
+            top: 335px;
+        }
     </style>
 
 </head>
 <body>
 <div id="container">
-    <canvas id="view"></canvas>
+    <canvas id="canvas"></canvas>
     <div id="controls">
         <div class="overlay" id="reload">Reload</div>
 
-        <div class="overlay station" id="tree">Tree</div>
-        <div class="overlay station" id="home">Home</div>
+        <div class="overlay menu" id="view">View...</div>
+        <div class="overlay" id="views">
+            <div class="view item">Track 1</div>
+            <div class="view item">Track 2</div>
+            <div class="view item">Meadow</div>
+            <div class="view item">Coast</div>
+            <div class="view item">Forest</div>
+            <div class="view item">Tree</div>
+            <div class="view item">Home</div>
+        </div>
 
-        <div class="overlay station" id="track1">Track 1</div>
-        <div class="overlay station" id="track2">Track 2</div>
-        <div class="overlay station" id="meadow">Meadow</div>
-        <div class="overlay station" id="forest">Forest</div>
+        <div class="overlay menu" id="station">Station...</div>
+        <div class="overlay" id="stations">
+            <div class="station item">Track 1</div>
+            <div class="station item">Track 2</div>
+            <div class="station item">Meadow</div>
+            <div class="station item">Forest</div>
+        </div>
+
+        <div class="overlay menu" id="track">Track...</div>
+        <div class="overlay" id="tracks">
+            <div class="track item">Track 1</div>
+            <div class="track item">Track 2</div>
+            <div class="track item">Meadow</div>
+        </div>
     </div>
 </div>
 </body>
