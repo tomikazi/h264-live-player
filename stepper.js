@@ -13,6 +13,7 @@ class Motor {
         this.home_steps = options.home_steps;
         this.home_direction = options.home_direction;
         this.homing = false;
+        this.moving = false;
 
         this.ctl = new A4988({
             step: options.step,
@@ -20,38 +21,62 @@ class Motor {
             enable: options.enable
         });
 
-        this.limit = new Gpio(options.limit, {
-            mode: Gpio.INPUT,
-            pullUpDown: Gpio.PUD_DOWN,
-            edge: Gpio.EITHER_EDGE,
-        });
+        if (this.limit > 0) {
+            this.limit = new Gpio(options.limit, {
+                mode: Gpio.INPUT,
+                pullUpDown: Gpio.PUD_DOWN,
+                edge: Gpio.EITHER_EDGE,
+            });
 
-        this.limit.on('interrupt', (level) => {
-            console.log(`${this.name} limit: ${level}`);
-            if (this.homing && !level) {
-                this.ctl.stop();
-            }
-        });
+            this.limit.on('interrupt', (level) => {
+                console.log(`${this.name} limit: ${level}`);
+                if (this.homing && !level) {
+                    this.ctl.stop();
+                }
+            });
+        }
 
+        this.ctl.enabled = true;
         this.ctl.step_size = 'SIXTEENTH';
 
         this.move = this.move.bind(this);
+        this.move_to = this.move_to.bind(this);
+        this.set_home = this.set_home.bind(this);
         this.start_home = this.start_home.bind(this);
         this._finish_home = this._finish_home.bind(this);
     }
 
-    move(steps) {
-        console.log(`${this.name} moving by ${steps}`);
-        this.ctl.direction = steps < 0 ? this.home_direction : !this.home_direction;
-        return this.ctl.turn(Math.abs(steps));
+    move_to(pos, delay) {
+        console.log(`${this.name} moving to ${pos}`);
+        let delta = pos - this.pos;
+        return this.move(delta, delay);
+    }
+
+    move(by, delay) {
+        console.log(`${this.name} moving by ${by}`);
+        if (delay) {
+            this.ctl.delay = delay;
+        }
+        this.moving = true;
+        this.ctl.direction = by < 0 ? this.home_direction : !this.home_direction;
+        return this.ctl.turn(Math.abs(by))
+            .then(steps => {
+                this.pos = this.pos + (steps * (by < 0 ? -1 : +1));
+                this.moving = false;
+            });
+    }
+
+    set_home() {
+        console.log(`${this.name} homed`);
+        this.ctl.delay = 1;
+        this.pos = 0;
+        this.homing = false;
+        this.moving = false;
     }
 
     _finish_home(steps) {
         if (steps < this.home_steps) {
-            console.log(`${this.name} homed`);
-            this.delay = 1;
-            this.pos = 0;
-            this.homing = false;
+            set_home();
             this.move(this.min)
                 .then(steps => {
                     this.move(this.mid)
@@ -72,7 +97,7 @@ class Motor {
             });
         } else {
             this.homing = true;
-            this.delay = 5;
+            this.ctl.delay = 5;
             console.log(`${this.name} starting to home (-${this.home_steps})`);
             this.move(-this.home_steps)
                 .then(steps => this._finish_home(steps));
@@ -81,29 +106,4 @@ class Motor {
 
 }
 
-const pan = new Motor('Pan', {
-    step: 27, dir: 22, enable: 17, limit: 23,
-    min: 4 * 16, max: 122 * 16, home_direction: true, home_steps: 200 * 16,
-});
-
-const tilt = new Motor('Tilt', {
-    step: 3, dir: 4, enable: 2, limit: 24,
-    min: 16, max: 46 * 16, home_direction: false, home_steps: 60 * 16,
-});
-
-console.log("Starting...");
-
-pan.ctl.enabled = false;
-tilt.ctl.enabled = false;
-
-// pan.start_home();
-// tilt.start_home();
-
-process.on('SIGINT', function() {
-    console.log("Caught interrupt signal");
-    // pan.ctl.enabled = false;
-    // tilt.ctl.enabled = false;
-    process.exit();
-});
-
-
+module.exports = Motor
