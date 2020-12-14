@@ -11,6 +11,7 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function () {
             var canvas = $('#view')[0];
+            var connected = false;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -27,78 +28,18 @@
                 console.log('WS connected');
                 connected = true;
                 setTimeout(startStream, 500);
-                requestDeviceMotionPermissions();
-            }
-
-            function stopStreamingControls() {
-                console.log('WS disconnected');
-                connected = false;
-            }
-
-            function setStatus(message, error) {
-                if (error) {
-                    console.error(message);
-                } else if (message) {
-                    console.log(message);
-                }
-                $('#status').html(message ? message : '&nbsp;').css('color', error ? '#ffaf00' : '#000');
-            }
-
-            var zerosSent = false,
-                connected = false,
-                controlling = false;
-
-            function deviceMotion(e) {
-                var tilt = e.rotationRate.beta,
-                    pan = e.rotationRate.alpha,
-                    tv = Math.abs(tilt) > 0.01 ? tilt.toFixed(2) : 0.0,
-                    pv = Math.abs(pan) > 0.01 ? pan.toFixed(2) : 0.0
-
-                if (connected && controlling) {
-                    setStatus('', false);
-
-                    if (tv && pv || !zerosSent) {
-                        wsavc.send('{"pan": ' + pv + ', "tilt": ' + tv + '}');
-                        zerosSent = !tv && !pv;
-                    }
-                }
-            }
-
-            function requestDeviceMotionPermissions() {
-                window.DeviceMotionEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            controlling = true;
-                            $('#toggle').html("Lock");
-                            window.addEventListener('devicemotion', deviceMotion, (e) => {
-                                throw e
-                            })
-                        } else {
-                            setStatus('DeviceMotion permissions NOT granted.', true);
-                        }
-                    })
-                    .catch(e => {
-                        console.error(e)
-                    })
-            }
-
-            function toggleControls() {
-                if (!controlling) {
-                    $('#toggle').html("...");
-                    startStreamingControls();
-                } else {
-                    controlling = false;
-                    $('#toggle').html("Unlock");
-                    stopStreamingControls();
-                }
             }
 
             function forceReload() {
                 window.location = window.location;
             }
 
-            $('#toggle').click(toggleControls);
+            function station(e) {
+                wsavc.send('{"station": "' + e.target.innerText + '"}');
+            }
+
             $('#reload').click(forceReload);
+            $('.station').click(station);
             setTimeout(startStreamingControls, 500);
         });
     </script>
@@ -129,11 +70,6 @@
             z-index: -1;
         }
 
-        .control {
-            display: inline-block;
-            margin: 10px;
-        }
-
         #controls {
             width: 100%;
             padding: 5px 10px 5px 10px;
@@ -141,6 +77,7 @@
         }
 
         .overlay {
+            border-radius: 8px;
             margin: 10px;
             padding: 8px;
             font-weight: bold;
@@ -150,13 +87,17 @@
             opacity: 0.5;
         }
 
-        #toggle {
-            top: 300px;
-        }
+        #reload { top: 50px; }
 
-        #reload {
-            top: 200px;
-        }
+        #tree { top: 150px; }
+        #home { top: 200px; }
+
+        #track1 { top: 300px; }
+        #track2 { top: 350px; }
+        #meadow { top: 400px; }
+        #forest { top: 450px; }
+
+
     </style>
 
 </head>
@@ -164,9 +105,15 @@
 <div id="container">
     <canvas id="view"></canvas>
     <div id="controls">
-        <div class="control" id="status">Connecting...</div>
-        <div class="overlay" id="toggle">Unlock</div>
         <div class="overlay" id="reload">Reload</div>
+
+        <div class="overlay station" id="tree">Tree</div>
+        <div class="overlay station" id="home">Home</div>
+
+        <div class="overlay station" id="track1">Track 1</div>
+        <div class="overlay station" id="track2">Track 2</div>
+        <div class="overlay station" id="meadow">Meadow</div>
+        <div class="overlay station" id="forest">Forest</div>
     </div>
 </div>
 </body>
