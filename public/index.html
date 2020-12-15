@@ -34,6 +34,7 @@
                     console.log(`Next stop is ${message}`);
                 } else if (topic === 'train/track/status') {
                     console.log(`Next track is ${message}`);
+
                 } else {
                     console.log('Unknown status', d);
                 }
@@ -63,8 +64,8 @@
             }
 
             function pick(topic, e) {
+                wsavc.ws.send('{"' + topic + '": "' + e.target.innerText + '"}');
                 menu(topic);
-                wsavc.send('{"' + topic + '": "' + e.target.innerText + '"}');
             }
 
             $('#reload').click(forceReload);
@@ -148,6 +149,13 @@
         #tracks {
             display: none;
             top: 335px;
+        }
+
+        #status {
+            margin: 10px;
+            padding: 8px;
+            color: #fff;
+            font-size: 16px;
         }
     </style>
 
