@@ -12,6 +12,7 @@
         $(document).ready(function () {
             var canvas = $('#canvas')[0];
             var connected = false;
+            var running = false;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -26,14 +27,19 @@
 
                 if (topic === 'train/status') {
                     console.log(`Train is ${message}`);
-                    if (message === 'off') {
+                    running = message === 'on';
+                    if (!running) {
                         set_status('station', 'None');
                         set_status('track', 'None');
+                    } else {
+                        set_status('view', 'None');
                     }
+                    $('#view').css('display', !running ? 'block' : 'none');
 
                 } else if (topic === 'train/location') {
                     console.log(`Train is at ${message}`);
                     set_status('location', message);
+                    set_status('view', 'None');
                 } else if (topic === 'train/view') {
                     console.log(`Camera is looking at ${message}`);
                     set_status('view', message);
@@ -69,6 +75,7 @@
                 container.css('display', collapsed ? 'block' : 'none');
                 $('.menu').css('display', !collapsed ? 'block' : 'none');
                 $('.status').css('display', !collapsed ? 'block' : 'none');
+                $('#view').css('display', !running && !collapsed ? 'block' : 'none');
                 $('#' + topic).css('display', 'block');
             }
 
@@ -221,7 +228,7 @@
         }
         #views {
             display: none;
-            top: 320px;
+            top: 250px;
         }
     </style>
 
