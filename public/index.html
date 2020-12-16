@@ -91,7 +91,8 @@
             }
 
             function set_status(which, status) {
-                $('#' + which + '_status').html(capitalize(status).replace('None', ''));
+                let v = capitalize(status).replace('None', '')
+                $('#' + which + '_status').css('background-color', v === '' ? 'transparent' : '#444').html(v);
             }
 
             $('#reload').click(forceReload);
@@ -148,7 +149,7 @@
             font-weight: bold;
             position: absolute;
             left: 20px;
-            background: #444;
+            background-color: #444;
             opacity: 0.5;
         }
 
@@ -237,7 +238,7 @@
 <div id="container">
     <canvas id="canvas"></canvas>
     <div id="controls">
-        <div class="overlay status" id="location_status">&nbsp;</div>
+        <div class="overlay status" id="location_status"></div>
         <div class="overlay" id="reload"></div>
 
         <div class="overlay menu" id="station"></div>
