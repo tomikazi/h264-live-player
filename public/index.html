@@ -26,14 +26,23 @@
 
                 if (topic === 'train/status') {
                     console.log(`Train is ${message}`);
+                    if (message === 'off') {
+                        set_status('station', 'None');
+                        set_status('track', 'None');
+                    }
+
                 } else if (topic === 'train/location') {
                     console.log(`Train is at ${message}`);
+                    set_status('location', message);
                 } else if (topic === 'train/view') {
                     console.log(`Camera is looking at ${message}`);
+                    set_status('view', message);
                 } else if (topic === 'train/station/status') {
                     console.log(`Next stop is ${message}`);
-                } else if (topic === 'train/track/status') {
+                    set_status('station', message);
+                } else if (topic === 'train/track/status' || topic === 'train/track') {
                     console.log(`Next track is ${message}`);
+                    set_status('track', message);
 
                 } else {
                     console.log('Unknown status', d);
@@ -56,16 +65,26 @@
 
             function menu(topic) {
                 let container = $('#' + topic + 's');
-                let menus = $('.menu');
                 let collapsed = container.css('display') === 'none'
                 container.css('display', collapsed ? 'block' : 'none');
-                menus.css('display', !collapsed ? 'block' : 'none');
+                $('.menu').css('display', !collapsed ? 'block' : 'none');
+                $('.status').css('display', !collapsed ? 'block' : 'none');
                 $('#' + topic).css('display', 'block');
             }
 
             function pick(topic, e) {
                 wsavc.ws.send('{"' + topic + '": "' + e.target.innerText + '"}');
                 menu(topic);
+            }
+
+            function capitalize(s) {
+                if (typeof s !== 'string') return ''
+                if (s.length < 2) return s;
+                return s.charAt(0).toUpperCase() + s.slice(1)
+            }
+
+            function set_status(which, status) {
+                $('#' + which + '_status').html(capitalize(status).replace('None', ''));
             }
 
             $('#reload').click(forceReload);
@@ -126,36 +145,83 @@
             opacity: 0.5;
         }
 
+        .menu {
+            margin: 0px;
+            padding: 0px;
+        }
+
         .item {
             padding: 8px 24px;
             cursor: pointer;
         }
 
-        #reload { top: 50px; }
-
-        #view { top: 150px; }
-        #views {
-            display: none;
-            top: 195px;
+        #reload {
+            margin: 0px;
+            padding: 0px;
+            width: 64px;
+            height: 64px;
+            top: 80px;
+            background-image: url('/camera/reload.png');
+            background-repeat: no-repeat;
+            background-position-y: 4px;
         }
 
-        #station { top: 220px; }
+        .menu {
+            width: 64px;
+            height: 64px;
+            background-repeat: no-repeat;
+            background-position-y: 4px;
+        }
+
+        .choices {
+            margin-top: 0px;
+            left: 80px;
+        }
+
+        .status {
+            left: 80px;
+            background-color: transparent;
+        }
+
+        #location_status {
+            top: 10px;
+            left: 0px;
+        }
+
+        #station {
+            top: 180px;
+            background-image: url('/camera/station.png');
+        }
+        #station_status {
+            top: 180px;
+        }
         #stations {
             display: none;
-            top: 265px;
+            top: 180px;
         }
 
-        #track { top: 290px; }
+        #track {
+            top: 250px;
+            background-image: url('/camera/track.png');
+        }
+        #track_status {
+            top: 250px;
+        }
         #tracks {
             display: none;
-            top: 335px;
+            top: 250px;
         }
 
-        #status {
-            margin: 10px;
-            padding: 8px;
-            color: #fff;
-            font-size: 16px;
+        #view {
+            top: 320px;
+            background-image: url('/camera/camera.png');
+        }
+        #view_status {
+            top: 320px;
+        }
+        #views {
+            display: none;
+            top: 320px;
         }
     </style>
 
@@ -164,10 +230,29 @@
 <div id="container">
     <canvas id="canvas"></canvas>
     <div id="controls">
-        <div class="overlay" id="reload">Reload</div>
+        <div class="overlay status" id="location_status">&nbsp;</div>
+        <div class="overlay" id="reload"></div>
 
-        <div class="overlay menu" id="view">View...</div>
-        <div class="overlay" id="views">
+        <div class="overlay menu" id="station"></div>
+        <div class="overlay status" id="station_status"></div>
+        <div class="overlay choices" id="stations">
+            <div class="station item">Track 1</div>
+            <div class="station item">Track 2</div>
+            <div class="station item">Meadow</div>
+            <div class="station item">Forest</div>
+        </div>
+
+        <div class="overlay menu" id="track"></div>
+        <div class="overlay status" id="track_status"></div>
+        <div class="overlay choices" id="tracks">
+            <div class="track item">Track 1</div>
+            <div class="track item">Track 2</div>
+            <div class="track item">Meadow</div>
+        </div>
+
+        <div class="overlay menu" id="view"></div>
+        <div class="overlay status" id="view_status"></div>
+        <div class="overlay choices" id="views">
             <div class="view item">Track 1</div>
             <div class="view item">Track 2</div>
             <div class="view item">Meadow</div>
@@ -175,21 +260,6 @@
             <div class="view item">Forest</div>
             <div class="view item">Tree</div>
             <div class="view item">Home</div>
-        </div>
-
-        <div class="overlay menu" id="station">Station...</div>
-        <div class="overlay" id="stations">
-            <div class="station item">Track 1</div>
-            <div class="station item">Track 2</div>
-            <div class="station item">Meadow</div>
-            <div class="station item">Forest</div>
-        </div>
-
-        <div class="overlay menu" id="track">Track...</div>
-        <div class="overlay" id="tracks">
-            <div class="track item">Track 1</div>
-            <div class="track item">Track 2</div>
-            <div class="track item">Meadow</div>
         </div>
     </div>
 </div>
