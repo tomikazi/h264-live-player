@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="app.png">
+    <meta name="viewport" content="width=720, initial-scale=2, maximum-scale=1, user-scalable=no" />
+
     <meta charset="UTF-8">
     <title>Pan &amp; Tilt Camera</title>
 
@@ -32,24 +36,31 @@
             color: #ccc;
             font-size: 32px;
         }
+
+        img {
+            vertical-align: middle;
+            height: 36px;
+        }
     </style>
 </head>
 <body>
 <p>
     This app allows view of a low-latency video stream from a remote camera that automatically
-    tracks an old O-gauge train, which has been hacked to allow remote control. It is recommended to view the camera
-    stream in landscape orientation.
+    tracks an old O-gauge train, which has been hacked to allow remote control.
 </p>
 <p>
-    If the video stream becomes laggy or pixelated, please press the <em>Reload</em> button to reset the video stream.
+    If the video stream becomes laggy or pixelated, please press the <img src="/camera/reload.png"/> <em>(reset)</em>
+    button to reset the video stream.
 </p>
 <p>
-    Use the <em>Station...</em> and <em>Track...</em> menus to select the next destination station and the next track, respectively.
+    Use the <img src="/camera/station.png"/> <em>(destination station)</em> and <img src="/camera/track.png"/>
+    <em>(next track)</em> menus to select the next destination station and the next track, respectively.
     The track will be switched only when it is safe to do so, which is when the train is in the tunnel or in the forest.
 </p>
 <p>
-    When the train is stopped, you may also look at the different points of interest using the <em>View...</em> menu.
-    To dismiss a menu without making a selection, just tap the menu button again.
+    When the train is stopped, you may also look at the different points of interest using the
+    <img src="/camera/camera.png"/> <em>(camera)</em> menu.
+    To dismiss any of menus without making a selection, just tap the menu button again.
 </p>
 <p>
     When ready, press the <em>Start</em> button below. On iOS devices, to view the video in full-screen mode,
