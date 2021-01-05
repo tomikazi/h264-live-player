@@ -13,7 +13,7 @@ app.use(express.static(__dirname + '/public'));
 app.use('/camera', express.static(__dirname + '/vendor/dist'));
 
 const server = http.createServer(app);
-const silence = new WebStreamerServer(server, {
+const streamer = new WebStreamerServer(server, {
     mqttIp: secret.mqttIp,
     mqttUser: secret.mqttUser,
     mqttPass: secret.mqttPass,
@@ -21,3 +21,9 @@ const silence = new WebStreamerServer(server, {
 
 console.log("Starting server...");
 server.listen(5000);
+
+process.on('SIGINT', function () {
+    console.log("Caught interrupt signal");
+    streamer.stop();
+    process.exit();
+});

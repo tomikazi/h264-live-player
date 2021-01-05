@@ -2,7 +2,7 @@
 <head>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="app.png">
-    <meta name="viewport" content="width=1280, initial-scale=0.66, maximum-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=1280, initial-scale=0.66, maximum-scale=1, user-scalable=no"/>
 
     <title>Pan &amp Tilt Camera</title>
 
@@ -11,8 +11,9 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function () {
             var canvas = $('#canvas')[0];
-            var connected = false;
-            var running = false;
+            var connected = false,
+                zerosSent = false,
+                controlling = false;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -24,64 +25,22 @@
             function onstatus(d) {
                 let topic = d.data.topic;
                 let message = d.data.message;
-
-                if (topic === 'train/status') {
-                    console.log(`Train is ${message}`);
-                    running = message === 'on';
-                    if (!running) {
-                        set_status('station', 'None');
-                        set_status('track', 'None');
-                    } else {
-                        set_status('view', 'None');
-                    }
-                    $('#view').css('display', !running ? 'block' : 'none');
-
-                } else if (topic === 'train/location') {
-                    console.log(`Train is at ${message}`);
-                    set_status('location', message);
-                    set_status('view', 'None');
-                } else if (topic === 'train/view') {
-                    console.log(`Camera is looking at ${message}`);
-                    set_status('view', message);
-                } else if (topic === 'train/station/status') {
-                    console.log(`Next stop is ${message}`);
-                    set_status('station', message);
-                } else if (topic === 'train/track/status' || topic === 'train/track') {
-                    console.log(`Next track is ${message}`);
-                    set_status('track', message);
-
-                } else {
-                    console.log('Unknown status', d);
-                }
+                console.log('Unknown status', d);
             }
 
             function startStream() {
                 wsavc.playStream();
             }
 
-            function startStreamingControls(d) {
+            function startStreamingControls() {
                 console.log('WS connected');
                 connected = true;
                 setTimeout(startStream, 500);
+                requestDeviceMotionPermissions();
             }
 
-            function forceReload() {
-                window.location = window.location;
-            }
-
-            function menu(topic) {
-                let container = $('#' + topic + 's');
-                let collapsed = container.css('display') === 'none'
-                container.css('display', collapsed ? 'block' : 'none');
-                $('.menu').css('display', !collapsed ? 'block' : 'none');
-                $('.status').css('display', !collapsed ? 'block' : 'none');
-                $('#view').css('display', !running && !collapsed ? 'block' : 'none');
-                $('#' + topic).css('display', 'block');
-            }
-
-            function pick(topic, e) {
-                wsavc.ws.send('{"' + topic + '": "' + e.target.innerText + '"}');
-                menu(topic);
+            function stopStreamingControls() {
+                controlling = false;
             }
 
             function capitalize(s) {
@@ -95,15 +54,63 @@
                 $('#' + which + '_status').css('background-color', v === '' ? 'transparent' : '#444').html(v);
             }
 
+            function toggleControls() {
+                if (!controlling) {
+                    startStreamingControls();
+                } else {
+                    controlling = false;
+                    stopStreamingControls();
+                }
+                $('#toggle').css('background-image', 'url(/camera/' + (controlling ? 'unlock' : 'lock') + '.png)');
+            }
+
+            function forceReload() {
+                window.location = window.location;
+            }
+
+            function deviceMotion(e) {
+                let orient = window.orientation;
+                if (orient) {
+                    let tilt = e.rotationRate.beta * (orient < 0 ? +1 : -1),
+                        pan = e.rotationRate.alpha * (orient < 0 ? -1 : +1),
+                        tv = Math.abs(tilt) > 0.25 ? tilt.toFixed(2) : 0.0,
+                        pv = Math.abs(pan) > 0.25 ? pan.toFixed(2) : 0.0
+
+                    if (connected && controlling) {
+                        // set_status('motion', '' + orient + '     ' + pv + ' : ' + tv);
+                        if (tv && pv || !zerosSent) {
+                            wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + '}');
+                            zerosSent = !tv && !pv;
+                        }
+                    }
+                }
+            }
+
+            function deviceOrientation() {
+                set_status('motion', window.orientation === 0 ? 'Not in landscape orientation' : 'None');
+            }
+
+            function requestDeviceMotionPermissions() {
+                window.addEventListener('orientationchange', deviceOrientation);
+                window.DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('devicemotion', deviceMotion, (e) => {
+                                throw e
+                            });
+                            $('#toggle').css('background-image', 'url(/camera/unlock.png)');
+                            controlling = true;
+                        } else {
+                            setStatus('DeviceMotion permissions NOT granted.', true);
+                        }
+                    })
+                    .catch(e => {
+                        console.error(e)
+                    })
+            }
+
+            $('#toggle').click(toggleControls);
             $('#reload').click(forceReload);
-
-            $('.view.item').click(function(e) { pick('view', e)});
-            $('.station.item').click(function(e) { pick('station', e)});
-            $('.track.item').click(function(e) { pick('track', e)});
-
-            $('#view').click(function() { menu('view')});
-            $('#station').click(function() { menu('station')});
-            $('#track').click(function() { menu('track')});
 
             setTimeout(startStreamingControls, 500);
         });
@@ -153,16 +160,6 @@
             opacity: 0.5;
         }
 
-        .menu {
-            margin: 0px;
-            padding: 0px;
-        }
-
-        .item {
-            padding: 8px 24px;
-            cursor: pointer;
-        }
-
         #reload {
             margin: 0px;
             padding: 0px;
@@ -174,16 +171,15 @@
             background-position-y: 4px;
         }
 
-        .menu {
+        #toggle {
+            margin: 0px;
+            padding: 0px;
             width: 64px;
             height: 64px;
+            top: 200px;
+            background-image: url('/camera/lock.png');
             background-repeat: no-repeat;
             background-position-y: 4px;
-        }
-
-        .choices {
-            margin-top: 0px;
-            left: 80px;
         }
 
         .status {
@@ -191,46 +187,11 @@
             background-color: transparent;
         }
 
-        #location_status {
+        #motion_status {
             top: 10px;
             left: 0px;
         }
 
-        #station {
-            top: 180px;
-            background-image: url('/camera/station.png');
-        }
-        #station_status {
-            top: 180px;
-        }
-        #stations {
-            display: none;
-            top: 180px;
-        }
-
-        #track {
-            top: 250px;
-            background-image: url('/camera/track.png');
-        }
-        #track_status {
-            top: 250px;
-        }
-        #tracks {
-            display: none;
-            top: 250px;
-        }
-
-        #view {
-            top: 320px;
-            background-image: url('/camera/camera.png');
-        }
-        #view_status {
-            top: 320px;
-        }
-        #views {
-            display: none;
-            top: 250px;
-        }
     </style>
 
 </head>
@@ -238,38 +199,9 @@
 <div id="container">
     <canvas id="canvas"></canvas>
     <div id="controls">
-        <div class="overlay status" id="location_status"></div>
+        <div class="overlay status" id="motion_status"></div>
         <div class="overlay" id="reload"></div>
-
-        <div class="overlay menu" id="station"></div>
-        <div class="overlay status" id="station_status"></div>
-        <div class="overlay choices" id="stations">
-            <div class="station item">Track 1</div>
-            <div class="station item">Track 2</div>
-            <div class="station item">Meadow</div>
-            <div class="station item">Forest</div>
-        </div>
-
-        <div class="overlay menu" id="track"></div>
-        <div class="overlay status" id="track_status"></div>
-        <div class="overlay choices" id="tracks">
-            <div class="track item">Track 1</div>
-            <div class="track item">Track 2</div>
-            <div class="track item">Meadow</div>
-        </div>
-
-        <div class="overlay menu" id="view"></div>
-        <div class="overlay status" id="view_status"></div>
-        <div class="overlay choices" id="views">
-            <div class="view item">Track 1</div>
-            <div class="view item">Track 2</div>
-            <div class="view item">Meadow</div>
-            <div class="view item">Coast</div>
-            <div class="view item">Forest</div>
-            <div class="view item">Tree</div>
-            <div class="view item">Home</div>
-        </div>
+        <div class="overlay" id="toggle"></div>
     </div>
-</div>
 </body>
 </html>
