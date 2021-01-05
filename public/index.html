@@ -12,8 +12,11 @@
         $(document).ready(function () {
             var canvas = $('#canvas')[0];
             var connected = false,
-                zerosSent = false,
-                controlling = false;
+                motionGranted = false,
+                controlling = false,
+                zerosSent = false;
+
+            var pan = 0, tilt = 0;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -23,9 +26,16 @@
             wsavc.connect(uri, onstatus);
 
             function onstatus(d) {
-                let topic = d.data.topic;
-                let message = d.data.message;
-                console.log('Unknown status', d);
+                if (!d.data.err) {
+                    if (d.data.name === 'Pan') {
+                        pan = d.data.pos;
+                    } else if (d.data.name === 'Tilt') {
+                        tilt = d.data.pos;
+                    }
+                    set_status('motion', '(' + pan + ', ' + tilt + ')');
+                } else {
+                    set_status('motion', '!!!!!!!!');
+                }
             }
 
             function startStream() {
@@ -35,7 +45,7 @@
             function startStreamingControls() {
                 console.log('WS connected');
                 connected = true;
-                setTimeout(startStream, 500);
+                setTimeout(startStream, 100);
                 requestDeviceMotionPermissions();
             }
 
@@ -99,6 +109,8 @@
                                 throw e
                             });
                             $('#toggle').css('background-image', 'url(/camera/unlock.png)');
+                            motionGranted = true;
+                            set_status('request', 'None');
                             controlling = true;
                         } else {
                             setStatus('DeviceMotion permissions NOT granted.', true);
@@ -109,9 +121,11 @@
                     })
             }
 
-            $('#toggle').click(toggleControls);
             $('#reload').click(forceReload);
+            $('#toggle').click(toggleControls);
+            $('#request_status').click(requestDeviceMotionPermissions);
 
+            setTimeout(deviceOrientation, 100);
             setTimeout(startStreamingControls, 500);
         });
     </script>
@@ -192,6 +206,11 @@
             left: 0px;
         }
 
+        #request_status {
+            top: 300px;
+            left: 520px;
+        }
+
     </style>
 
 </head>
@@ -202,6 +221,7 @@
         <div class="overlay status" id="motion_status"></div>
         <div class="overlay" id="reload"></div>
         <div class="overlay" id="toggle"></div>
+        <div class="overlay" id="request_status">Unlock Pan &amp; Tilt</div>
     </div>
 </body>
 </html>
