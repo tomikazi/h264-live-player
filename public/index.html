@@ -16,7 +16,9 @@
                 controlling = false,
                 zerosSent = false;
 
-            var pan = 0, tilt = 0;
+            var pan = 0, tilt = 0,
+                panMin = -100 * 16, panMax = 100 * 16,
+                tiltMin = -30 * 16, tiltMax = 30 * 16;
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -25,6 +27,10 @@
             var wsavc = new WSAvcPlayer(canvas, "webgl", 1, 35);
             wsavc.connect(uri, onstatus);
 
+            function map(x, in_min, in_max, out_min, out_max) {
+                return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+            }
+
             function onstatus(d) {
                 if (!d.data.err) {
                     if (d.data.name === 'Pan') {
@@ -32,9 +38,10 @@
                     } else if (d.data.name === 'Tilt') {
                         tilt = d.data.pos;
                     }
-                    set_status('motion', '(' + pan + ', ' + tilt + ')');
-                } else {
-                    set_status('motion', '!!!!!!!!');
+                    px = map(-pan, panMin, panMax, 0, 305);
+                    py = map(-tilt, tiltMin, tiltMax, 0, 75);
+                    $('#position').css('left', px).css('top', py);
+                    // set_status('motion', '(' + pan + ', ' + tilt + ')');
                 }
             }
 
@@ -83,8 +90,8 @@
                 if (orient) {
                     let tilt = e.rotationRate.beta * (orient < 0 ? +1 : -1),
                         pan = e.rotationRate.alpha * (orient < 0 ? -1 : +1),
-                        tv = Math.abs(tilt) > 0.25 ? tilt.toFixed(2) : 0.0,
-                        pv = Math.abs(pan) > 0.25 ? pan.toFixed(2) : 0.0
+                        tv = Math.abs(tilt) > 0.1 ? tilt.toFixed(2) : 0.0,
+                        pv = Math.abs(pan) > 0.1 ? pan.toFixed(2) : 0.0
 
                     if (connected && controlling) {
                         // set_status('motion', '' + orient + '     ' + pv + ' : ' + tv);
@@ -211,6 +218,26 @@
             left: 520px;
         }
 
+        .positioncontainer {
+            border: solid #ccc 2px;
+            width: 320px;
+            height: 90px;
+            margin: auto;
+            top: 540px;
+            position: relative;
+            opacity: 0.6;
+        }
+
+        #position {
+            position: relative;
+            top: 37px;
+            left: 152px;
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            background-color: #ccc;
+        }
+
     </style>
 
 </head>
@@ -223,5 +250,6 @@
         <div class="overlay" id="toggle"></div>
         <div class="overlay" id="request_status">Unlock Pan &amp; Tilt</div>
     </div>
+    <div class="positioncontainer"><div id="position"></div></div>
 </body>
 </html>
