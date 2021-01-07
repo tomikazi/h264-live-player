@@ -7,7 +7,7 @@
     <title>Pan &amp Tilt Camera</title>
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.12.4.min.js"></script>
-    <script type="text/javascript" src="/camera/http-live-player.js">;</script>
+    <script type="text/javascript" src="http-live-player.js">;</script>
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function () {
             var canvas = $('#canvas')[0];
@@ -22,7 +22,7 @@
 
             let port = location.port ? parseInt(location.port) : (location.protocol === 'https:' ? 443 : 80);
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            var uri = protocol + '//' + location.hostname + ':' + port;
+            var uri = protocol + '//' + location.hostname + ':' + port + location.pathname;
 
             var wsavc = new WSAvcPlayer(canvas, "webgl", 1, 35);
             wsavc.connect(uri, onstatus);
@@ -78,7 +78,7 @@
                     controlling = false;
                     stopStreamingControls();
                 }
-                $('#toggle').css('background-image', 'url(/camera/' + (controlling ? 'unlock' : 'lock') + '.png)');
+                $('#toggle').css('background-image', 'url(' + (controlling ? 'unlock' : 'lock') + '.png)');
             }
 
             function forceReload() {
@@ -115,7 +115,7 @@
                             window.addEventListener('devicemotion', deviceMotion, (e) => {
                                 throw e
                             });
-                            $('#toggle').css('background-image', 'url(/camera/unlock.png)');
+                            $('#toggle').css('background-image', 'url(unlock.png)');
                             motionGranted = true;
                             set_status('request', 'None');
                             controlling = true;
@@ -187,7 +187,7 @@
             width: 64px;
             height: 64px;
             top: 80px;
-            background-image: url('/camera/reload.png');
+            background-image: url('reload.png');
             background-repeat: no-repeat;
             background-position-y: 4px;
         }
@@ -198,7 +198,7 @@
             width: 64px;
             height: 64px;
             top: 200px;
-            background-image: url('/camera/lock.png');
+            background-image: url('lock.png');
             background-repeat: no-repeat;
             background-position-y: 4px;
         }
