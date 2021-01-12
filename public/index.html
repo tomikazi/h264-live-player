@@ -90,8 +90,8 @@
                 if (orient) {
                     let tilt = e.rotationRate.beta * (orient < 0 ? +1 : -1),
                         pan = e.rotationRate.alpha * (orient < 0 ? -1 : +1),
-                        tv = Math.abs(tilt) > 0.1 ? tilt.toFixed(2) : 0.0,
-                        pv = Math.abs(pan) > 0.1 ? pan.toFixed(2) : 0.0
+                        tv = Math.abs(tilt) > 0.25 ? tilt.toFixed(2) : 0.0,
+                        pv = Math.abs(pan) > 0.25 ? pan.toFixed(2) : 0.0
 
                     if (connected && controlling) {
                         // set_status('motion', '' + orient + '     ' + pv + ' : ' + tv);
