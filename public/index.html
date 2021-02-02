@@ -85,6 +85,10 @@
                 window.location = window.location;
             }
 
+            function startHome() {
+                wsavc.ws.send('{"cmd": "home"}');
+            }
+
             function deviceMotion(e) {
                 let orient = window.orientation;
                 if (orient) {
@@ -153,6 +157,7 @@
 
             $('#reload').click(forceReload);
             $('#toggle').click(toggleControls);
+            $('#home').click(startHome);
 
             if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
                 $('#request_status').click(requestDeviceMotionPermissions);
@@ -233,6 +238,17 @@
             background-position-y: 4px;
         }
 
+        #home {
+            margin: 0px;
+            padding: 0px;
+            width: 64px;
+            height: 64px;
+            top: 520px;
+            background-image: url('home.png');
+            background-repeat: no-repeat;
+            background-position-y: 2px;
+        }
+
         .status {
             left: 80px;
             background-color: transparent;
@@ -278,6 +294,7 @@
         <div class="overlay status" id="motion_status"></div>
         <div class="overlay" id="reload"></div>
         <div class="overlay" id="toggle"></div>
+        <div class="overlay" id="home"></div>
         <div class="overlay" id="request_status">Unlock Pan &amp; Tilt</div>
     </div>
     <div id="positioncontainer"><div id="position"></div></div>
