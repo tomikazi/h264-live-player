@@ -94,14 +94,13 @@
                 if (orient) {
                     let tilt = e.rotationRate.beta * (orient < 0 ? +1 : -1),
                         pan = e.rotationRate.alpha * (orient < 0 ? -1 : +1),
-                        tv = Math.abs(tilt) > 0.25 ? tilt.toFixed(2) : 0.0,
-                        pv = Math.abs(pan) > 0.25 ? pan.toFixed(2) : 0.0
+                        tv = Math.abs(tilt) > 0.25 ? tilt.toFixed(2)/4 : 0.0,
+                        pv = Math.abs(pan) > 0.25 ? pan.toFixed(2)/4 : 0.0
 
                     if (connected && controlling) {
                         // set_status('motion', '' + orient + '     ' + pv + ' : ' + tv);
                         if (tv && pv || !zerosSent) {
-                            wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv +
-                                            ', "relative": true, "slow": true}');
+                            wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true, "slow": false}');
                             zerosSent = !tv && !pv;
                         }
                     }
@@ -145,7 +144,7 @@
                     tv = +speed;
                 } else if (e.key === 'ArrowDown') {
                     tv = -speed;
-                } else if (e.key === 'Home') {
+                } else if (e.key === 'Home' || e.key === 'h') {
                     wsavc.ws.send('{"pan": 0.0, "tilt": 0.0, "relative": false}');
                     return;
                 }
