@@ -134,7 +134,7 @@
             }
 
             function keyHandler(e) {
-                let speed = e.shiftKey ? 4 : 32;
+                let speed = e.shiftKey ? 4 : 64;
                 let pv = 0, tv = 0;
                 // console.log(e);
                 if (e.key === 'ArrowLeft') {
@@ -151,7 +151,7 @@
                 }
 
                 if (pv || tv) {
-                    wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true}');
+                    wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true, "slow": true}');
                 }
             }
 
