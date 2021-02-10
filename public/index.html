@@ -133,25 +133,25 @@
                     })
             }
 
-            function dragHandler(e) {
-                // Translate final position to pan/tilt coordinates.
-                let box = $('#positioncontainer');
-                let dot = $('#position');
-
-                let bX = box.offset().left;
-                let bY = box.offset().top;
-                let newPan = map(dot.offset().left, bX, bX + 305, panMin, panMax);
-                let newTilt = - map(dot.offset().top, bY, bY + 75, tiltMin, tiltMax);
-
-                // Compute delta and issue a move to server
-                let pv = newPan - pan, tv = newTilt - tilt;
+            function keyHandler(e) {
+                let speed = e.shiftKey ? 4 : 32;
+                let pv = 0, tv = 0;
+                // console.log(e);
+                if (e.key === 'ArrowLeft') {
+                    pv = +speed;
+                } else if (e.key === 'ArrowRight') {
+                    pv = -speed;
+                } else if (e.key === 'ArrowUp') {
+                    tv = +speed;
+                } else if (e.key === 'ArrowDown') {
+                    tv = -speed;
+                } else if (e.key === 'Home') {
+                    wsavc.ws.send('{"pan": 0.0, "tilt": 0.0, "relative": false}');
+                    return;
+                }
 
                 if (pv || tv) {
-                    pan = newPan;
-                    tilt = newTilt;
-                    // wsavc.ws.send('{"pan": ' + newPan + ', "tilt": ' + newTilt + ', "relative": false}');
-                    wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true, "slow": false}');
-                    // console.log(pv, tv);
+                    wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true}');
                 }
             }
 
@@ -165,8 +165,9 @@
                 setTimeout(requestDeviceMotionPermissions, 500);
             } else {
                 $('#request_status').css('display', 'none');
-                // $('#position').draggable({ containment: "#positioncontainer", scroll: false }).on('drag', dragHandler);
             }
+
+            $('body').keydown(keyHandler);
             setTimeout(startStreamingControls, 500);
         });
     </script>
