@@ -160,6 +160,12 @@
                 } else if (e.key === '6') {
                     wsavc.ws.send('{"pan": 1600.0, "tilt": 0.0, "relative": false}');
                     return;
+                } else if (e.key === 'q' && e.ctrlKey) {
+                    wsavc.ws.send('{"cmd": "enable", "on": false}');
+                    return;
+                } else if (e.key === 'e' && e.ctrlKey) {
+                    wsavc.ws.send('{"cmd": "enable", "on": true}');
+                    return;
                 }
 
                 if (pv || tv) {

@@ -10,11 +10,15 @@ const WebStreamerServer = require('./lib/raspivid');
 const app = express();
 const url = args['url'] || '/camera'
 
+const tokensFile = __dirname + '/tokens'
+
 // Poor-man's access control
 let validateToken = function(token) {
+    if (!fs.existsSync(tokensFile)) {
+        return true;
+    }
     if (token.length === 36) {
-        console.log(__dirname + '/tokens');
-        let data = fs.readFileSync(__dirname + '/tokens');
+        let data = fs.readFileSync(tokensFile);
         if (data && data.includes(token)) {
             return true;
         }
