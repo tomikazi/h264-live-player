@@ -27,7 +27,7 @@ let validateToken = function(token) {
 }
 
 let gateKeeper = function (req, res, next) {
-    if (req.path === url + '/') {
+    if (req.path === url + '/' || req.path === url + '/index.html') {
         console.log(`New visitor to ${req.path}; token=${req.query.v}`);
         if (req.query.v && validateToken(req.query.v)) {
             next();
