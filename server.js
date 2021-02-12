@@ -1,5 +1,6 @@
 "use strict";
 
+var fs = require('fs');
 const http = require('http');
 const express = require('express');
 const args = require('minimist')(process.argv.slice(2))
@@ -9,8 +10,32 @@ const WebStreamerServer = require('./lib/raspivid');
 const app = express();
 const url = args['url'] || '/camera'
 
-//public website
-app.use(express.static(__dirname + '/public'));
+// Poor-man's access control
+let validateToken = function(token) {
+    if (token.length === 36) {
+        console.log(__dirname + '/tokens');
+        let data = fs.readFileSync(__dirname + '/tokens');
+        if (data && data.includes(token)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+let gateKeeper = function (req, res, next) {
+    if (req.path === url + '/') {
+        console.log(`New visitor to ${req.path}; token=${req.query.v}`);
+        if (req.query.v && validateToken(req.query.v)) {
+            next();
+        } else {
+            res.status(403).send("Sorry! Zakázáno!");
+        }
+    } else {
+        next();
+    }
+}
+
+app.use(gateKeeper);
 app.use(url, express.static(__dirname + '/vendor/dist'));
 
 const server = http.createServer(app);
