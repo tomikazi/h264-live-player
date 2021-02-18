@@ -177,6 +177,38 @@
             $('#toggle').click(toggleControls);
             $('#home').click(startHome);
 
+            // Touch and mouse events
+            let tracking = false;
+            let lp = 0, lt = 0;
+
+            function mStart(e) {
+                tracking = true;
+                lp = e.offsetX;
+                lt = e.offsetY;
+            }
+
+            function mMove(e) {
+                if (tracking) {
+                    let pv = e.offsetX - lp;
+                    let tv = e.offsetY - lt;
+                    if (pv || tv) {
+                        // console.log(`pv=${pv}; tv=${tv}`, e);
+                        wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true, "slow": false}');
+                        lp = e.offsetX;
+                        lt = e.offsetY;
+                    }
+                }
+            }
+
+            function mEnd(e) {
+                tracking = false;
+            }
+
+            // Register mouse and touch events....
+            $('#container')
+                .on('touchstart', mStart).on('touchmove', mMove).on('touchend', mEnd)
+                .on('mousedown', mStart).on('mousemove', mMove).on('mouseup', mEnd);
+
             if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
                 $('#request_status').click(requestDeviceMotionPermissions);
                 setTimeout(deviceOrientation, 100);
