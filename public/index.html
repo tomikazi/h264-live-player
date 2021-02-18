@@ -187,11 +187,11 @@
             // Mouse event handlers
             function mStart(e) {
                 $('#container').css('cursor', 'grab');
-                cStart(e.offsetX, e.offsetY);
+                cStart(e.pageX, e.pageY);
             }
 
             function mMove(e) {
-                cMove(e.offsetX, e.offsetY);
+                cMove(e.pageX, e.pageY);
             }
 
             function mEnd(e) {
@@ -243,7 +243,7 @@
 
             } else {
                 console.log('WTAF');
-                $('#motion').css('display', 'none');
+                $('#request_status').css('display', 'none');
                 $('#reload').css('display', 'none');
                 $('#positioncontainer').css('top', 600);
 
@@ -267,7 +267,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #222;
             color: #ddd;
             font-family: Arial, Helvetica, Sans-Serif, serif;
             font-size: 24px;
