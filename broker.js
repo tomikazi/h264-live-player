@@ -2,25 +2,24 @@
 
 const http = require('http');
 const express = require('express');
-const args = require('minimist')(process.argv.slice(2))
 
-const WebStreamerServer = require('./lib/raspivid');
+const WebStreamerServer = require('./lib/relay');
 
 const app = express();
-const url = args['url'] || '/camera'
+const url = '/camera'
 
 //public website
 app.use(express.static(__dirname + '/public'));
 app.use(url, express.static(__dirname + '/vendor/dist'));
 
 const server = http.createServer(app);
-const streamer = new WebStreamerServer(server, {});
+const broker = new WebStreamerServer(server, {});
 
-console.log(`Starting server on ${url}...`);
-server.listen(5000);
+console.log(`Starting camera broker...`);
+server.listen(6000);
 
 process.on('SIGINT', function () {
     console.log('Caught interrupt signal');
-    streamer.stop();
+    broker.stop();
     process.exit();
 });
