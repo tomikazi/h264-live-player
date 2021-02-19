@@ -16,8 +16,7 @@
                 connected = false,
                 motionGranted = false,
                 controlling = false,
-                zerosSent = false,
-                debug = false;
+                zerosSent = false;
 
             var pan = 0, tilt = 0,
                 panMin = -100 * 16, panMax = 100 * 16,
@@ -27,9 +26,11 @@
             let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
             var uri = protocol + '//' + location.hostname + ':' + port + location.pathname;
 
-            if (!debug) {
+            try {
                 wsavc = new WSAvcPlayer(canvas, "webgl", 1, 35);
                 wsavc.connect(uri, onstatus);
+            } catch {
+                console.error('No WsAvcPlayer available');
             }
 
             function map(x, in_min, in_max, out_min, out_max) {
@@ -112,7 +113,8 @@
             }
 
             function deviceOrientation() {
-                set_status('motion', window.orientation === 0 ? 'Not in landscape orientation' : 'None');
+                set_status('motion', window.orientation === 0 ? 'Not in landscape orientation' :
+                                    motionGranted ? 'None' : 'Enable Motion');
             }
 
             function requestDeviceMotionPermissions() {
@@ -125,7 +127,7 @@
                             });
                             $('#toggle').css('display', 'block').css('background-image', 'url(unlock.png)');
                             motionGranted = true;
-                            set_status('request', 'None');
+                            set_status('motion', 'None');
                             controlling = true;
                         } else {
                             setStatus('DeviceMotion permissions NOT granted.', true);
@@ -234,7 +236,8 @@
             }
 
             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                $('#request_status').click(requestDeviceMotionPermissions);
+                $('#help').css('display', 'none');
+                $('#motion_status').click(requestDeviceMotionPermissions);
                 setTimeout(deviceOrientation, 100);
                 setTimeout(requestDeviceMotionPermissions, 500);
 
@@ -242,8 +245,7 @@
                 $('#container').on('touchstart', tStart).on('touchmove', tMove).on('touchend', tEnd);
 
             } else {
-                console.log('WTAF');
-                $('#request_status').css('display', 'none');
+                $('#motion_status').css('display', 'none');
                 $('#reload').css('display', 'none');
                 $('#positioncontainer').css('top', 600);
 
@@ -351,11 +353,6 @@
             left: 0px;
         }
 
-        #request_status {
-            top: 10px;
-            left: 520px;
-        }
-
         #positioncontainer {
             border: solid #ccc 2px;
             width: 320px;
@@ -376,6 +373,13 @@
             background-color: #ccc;
         }
 
+        #help {
+            position: relative;
+            width: 1280px;
+            margin: auto;
+            font-size: 18px;
+        }
+
     </style>
 
 </head>
@@ -383,12 +387,21 @@
 <div id="container">
     <canvas id="canvas"></canvas>
     <div id="controls">
-        <div class="overlay status" id="motion_status"></div>
+        <div class="overlay status" id="motion_status">Enable Motion</div>
         <div class="overlay" id="reload"></div>
         <div class="overlay" id="toggle"></div>
 <!--        <div class="overlay" id="home"></div>-->
-        <div class="overlay" id="request_status">Enable Motion</div>
     </div>
     <div id="positioncontainer"><div id="position"></div></div>
+</div>
+<div id="help">
+    <p>
+        To control pan/tilt you can use the arrow keys or click-and-drag on the camera viewport.
+    </p>
+    <p>
+        You can also press the <em>h</em> key, <em>3</em>, <em>9</em> and <em>6</em> key to quickly navigate to the
+        home (12 o'clock) position or to the respective 3, 9 and 6 o'clock positions.
+    </p>
+</div>
 </body>
 </html>
