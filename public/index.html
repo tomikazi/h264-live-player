@@ -140,41 +140,37 @@
 
             function keyHandler(e) {
                 let speed = e.shiftKey ? 4 : 96;
-                let pv = 0, tv = 0;
-                if (e.key === 'ArrowLeft') {
-                    pv = +speed;
-                } else if (e.key === 'ArrowRight') {
-                    pv = -speed;
-                } else if (e.key === 'ArrowUp') {
-                    tv = +speed;
-                } else if (e.key === 'ArrowDown') {
-                    tv = -speed;
-                } else if (e.key === 'Home' || e.key === 'h') {
-                    if (e.ctrlKey) {
-                        startHome();
-                    } else {
+                if (e.ctrlKey) {
+                    if (e.key === 'q') {
+                        wsavc.ws.send('{"cmd": "enable", "on": false}');
+                    } else if (e.key === 'e') {
+                        wsavc.ws.send('{"cmd": "enable", "on": true}');
+                    } else if (e.key === 'Home' || e.key === 'h') {
                         wsavc.ws.send('{"pan": 0.0, "tilt": 0.0, "relative": false}');
+                        setTimeout(startHome, 1000);
                     }
-                    return;
+
+                } else if (e.key === 'ArrowLeft') {
+                    wsavc.ws.send('{"pan": ' + +speed + ', "tilt": 0, "relative": true, "slow": true}');
+                } else if (e.key === 'ArrowRight') {
+                    wsavc.ws.send('{"pan": ' + -speed + ', "tilt": 0, "relative": true, "slow": true}');
+                } else if (e.key === 'ArrowUp') {
+                    wsavc.ws.send('{"pan": 0, "tilt": ' + +speed + ', "relative": true, "slow": true}');
+                } else if (e.key === 'ArrowDown') {
+                    wsavc.ws.send('{"pan": 0, "tilt": ' + -speed + ', "relative": true, "slow": true}');
+
+                } else if (e.key === '0' || e.key === 'Home') {
+                    wsavc.ws.send('{"pan": 0.0, "tilt": 0.0, "relative": false}');
                 } else if (e.key === '3') {
                     wsavc.ws.send('{"pan": -800.0, "tilt": 0.0, "relative": false}');
-                    return;
                 } else if (e.key === '9') {
                     wsavc.ws.send('{"pan": 800.0, "tilt": 0.0, "relative": false}');
-                    return;
                 } else if (e.key === '6') {
                     wsavc.ws.send('{"pan": 1600.0, "tilt": 0.0, "relative": false}');
-                    return;
-                } else if (e.key === 'q' && e.ctrlKey) {
-                    wsavc.ws.send('{"cmd": "enable", "on": false}');
-                    return;
-                } else if (e.key === 'e' && e.ctrlKey) {
-                    wsavc.ws.send('{"cmd": "enable", "on": true}');
-                    return;
-                }
 
-                if (pv || tv) {
-                    wsavc.ws.send('{"pan": ' + pv + ', "tilt": ' + tv + ', "relative": true, "slow": true}');
+
+                } else if (e.key === 'h') {
+                    $('#help').css('display', $('#help').css('display') === 'none' ? 'block' : 'none');
                 }
             }
 
@@ -235,6 +231,10 @@
                 }
             }
 
+            function hideHelp() {
+                $('#help').css('display', 'none');
+            }
+
             if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                 $('#help').css('display', 'none');
                 $('#motion_status').click(requestDeviceMotionPermissions);
@@ -262,6 +262,7 @@
 
             $('body').keydown(keyHandler);
             setTimeout(startStreamingControls, 500);
+            setTimeout(hideHelp, 10000);
         });
     </script>
 
@@ -378,6 +379,7 @@
             width: 1280px;
             margin: auto;
             font-size: 18px;
+            color: #999;
         }
 
     </style>
@@ -396,11 +398,19 @@
 </div>
 <div id="help">
     <p>
-        To control pan/tilt you can use the arrow keys or click-and-drag on the camera viewport.
+        To control pan/tilt you can use the keyboard arrow keys. Hold down the <em>Shift</em> key for fine-grained
+        position control.
+        Alternatively, you can pan around the real-world using click-and-drag on the camera viewport.
     </p>
     <p>
-        You can also press the <em>h</em> key, <em>3</em>, <em>9</em> and <em>6</em> key to quickly navigate to the
-        home (12 o'clock) position or to the respective 3, 9 and 6 o'clock positions.
+        You can also press the <em>0</em>, <em>3</em>, <em>9</em> and <em>6</em> key to quickly
+        navigate to the home (12 o'clock) position or to the respective 3, 9 and 6 o'clock positions.
+    </p>
+    <p>
+        To initiate the auto-homing sequence, press <em>Ctrl-Home</em>.
+    </p>
+    <p>
+        To hide/show this message, press the <em>h</em> key.
     </p>
 </div>
 </body>
