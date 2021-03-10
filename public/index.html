@@ -174,9 +174,39 @@
                 }
             }
 
+            function menu(topic) {
+                let container = $('#' + topic + 's');
+                let collapsed = container.css('display') === 'none'
+                container.css('display', collapsed ? 'block' : 'none');
+                $('.menu').css('display', !collapsed ? 'block' : 'none');
+                $('.status').css('display', !collapsed ? 'block' : 'none');
+                $('#view').css('display', !collapsed ? 'block' : 'none');
+                $('#' + topic).css('display', 'block');
+            }
+
+            function pick(topic, e) {
+                let cmd = e.target.id;
+                if (cmd === 'clock0') {
+                    wsavc.ws.send('{"pan": 0.0, "tilt": 0.0, "relative": false}');
+                } else if (cmd === 'clock9') {
+                    wsavc.ws.send('{"pan": 800.0, "tilt": 0.0, "relative": false}');
+                } else if (cmd === 'clock3') {
+                    wsavc.ws.send('{"pan": -800.0, "tilt": 0.0, "relative": false}');
+                } else if (cmd === 'clock6') {
+                    wsavc.ws.send('{"pan": 1600.0, "tilt": 0.0, "relative": false}');
+                } else if (cmd === 'autohome') {
+                    setTimeout(startHome, 1000);
+                }
+                menu(topic);
+            }
+
             $('#reload').click(forceReload);
             $('#toggle').click(toggleControls);
             $('#home').click(startHome);
+
+            $('.view.item').click(function(e) { pick('view', e)});
+            $('#view').click(function() { menu('view')});
+
 
             // Touch and mouse events
             let tracking = false;
@@ -247,6 +277,7 @@
             } else {
                 $('#motion_status').css('display', 'none');
                 $('#reload').css('display', 'none');
+                $('.menu').css('display', 'none');
                 $('#positioncontainer').css('top', 600);
 
                 // Unless embedded, center the view-port on the page.
@@ -310,6 +341,34 @@
             opacity: 0.5;
         }
 
+        .menu {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .menu {
+            width: 64px;
+            height: 64px;
+            background-repeat: no-repeat;
+            background-position-y: 4px;
+        }
+
+        .status {
+            left: 80px;
+            background-color: transparent;
+        }
+
+        .choices {
+            margin-top: 0px;
+            left: 80px;
+        }
+
+
+        .item {
+            padding: 8px 24px;
+            cursor: pointer;
+        }
+
         #reload {
             margin: 0px;
             padding: 0px;
@@ -333,17 +392,6 @@
             background-position-y: 4px;
         }
 
-        #home {
-            margin: 0px;
-            padding: 0px;
-            width: 64px;
-            height: 64px;
-            top: 520px;
-            background-image: url('home.png');
-            background-repeat: no-repeat;
-            background-position-y: 2px;
-        }
-
         .status {
             left: 80px;
             background-color: transparent;
@@ -354,6 +402,20 @@
             left: 0px;
         }
 
+        #view {
+            top: 320px;
+            background-image: url('camera.png');
+        }
+
+        #view_status {
+            top: 320px;
+        }
+
+        #views {
+            display: none;
+            top: 250px;
+        }
+
         #positioncontainer {
             border: solid #ccc 2px;
             width: 320px;
@@ -361,8 +423,7 @@
             margin: auto;
             top: 540px;
             position: relative;
-            opacity: 0.6;
-        }
+            opacity: 0.6;        }
 
         #position {
             position: relative;
@@ -388,13 +449,25 @@
 <body>
 <div id="container">
     <canvas id="canvas"></canvas>
+
     <div id="controls">
-        <div class="overlay status" id="motion_status">Enable Motion</div>
+        <div class="overlay" id="motion_status">Enable Motion</div>
         <div class="overlay" id="reload"></div>
         <div class="overlay" id="toggle"></div>
-<!--        <div class="overlay" id="home"></div>-->
+
+        <div class="overlay menu" id="view"></div>
+        <div class="overlay choices" id="views">
+            <div class="view item" id="clock0">Forward</div>
+            <div class="view item" id="clock9">Left</div>
+            <div class="view item" id="clock3">Right</div>
+            <div class="view item" id="clock6">Backward</div>
+            <p><hr></p>
+            <div class="view item" id="autohome">Auto Home</div>
+        </div>
     </div>
+
     <div id="positioncontainer"><div id="position"></div></div>
+
 </div>
 <div id="help">
     <p>
